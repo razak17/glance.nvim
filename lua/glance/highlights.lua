@@ -56,7 +56,7 @@ local function setup_theme(mode)
   local bg_normal_value, fg_normal_value = get_hl_value('Normal')
   local bg_normal = Color.new(bg_normal_value)
   local fg_normal = Color.new(fg_normal_value)
-  local cursor_line = Color.new(get_hl_value('CursorLine', 'bg'))
+  local cursor_line = Color.new(get_hl_value('ModeMsg', 'bg'))
   local fg_border_value = get_hl_value('FloatBorder', 'fg')
   local line_nr = Color.new(get_hl_value('LineNr', 'fg'))
 
