@@ -19,8 +19,8 @@ config.hl_ns = 'Glance'
 ---@field mode ('"brighten"' | '"darken"' | '"auto"')
 
 ---@class GlanceMappingsOpts
----@field list table<string, fun()>
----@field preview table<string, fun()>
+---@field list table<string, fun()|false>
+---@field preview table<string, fun()|false>
 
 ---@class GlanceHooksOpts
 ---@field before_open fun(results: table[], open: fun(locations: table[]), jump: fun(location: table), method: GlanceMethod)
@@ -93,12 +93,14 @@ function config.setup(user_config, actions)
         ['s'] = actions.jump_split,
         ['t'] = actions.jump_tab,
         ['<CR>'] = actions.jump,
+        ['l'] = actions.open_fold,
+        ['h'] = actions.close_fold,
         ['o'] = actions.jump,
         ['<leader>l'] = actions.enter_win('preview'),
         ['q'] = actions.close,
         ['Q'] = actions.close,
         ['<Esc>'] = actions.close,
-        ["<C-q>"] = actions.quickfix,
+        ['<C-q>'] = actions.quickfix,
       },
       preview = {
         ['Q'] = actions.close,
@@ -109,8 +111,8 @@ function config.setup(user_config, actions)
     },
     hooks = {},
     folds = {
-      fold_closed = '',
-      fold_open = '',
+      fold_closed = '',
+      fold_open = '',
       folded = true,
     },
     indent_lines = {

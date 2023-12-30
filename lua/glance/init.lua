@@ -1,6 +1,7 @@
 local config = require('glance.config')
 local highlights = require('glance.highlights')
 local utils = require('glance.utils')
+local lsp = require('glance.lsp')
 
 local Glance = {}
 local glance = {}
@@ -15,6 +16,7 @@ function Glance.setup(opts)
 
   config.setup(opts, Glance.actions)
   highlights.setup()
+  lsp.setup()
 
   initialized = true
 end
@@ -187,7 +189,6 @@ end
 
 ---@param opts GlanceOpenOpts
 local function open(opts)
-  local lsp = require('glance.lsp')
   local parent_bufnr = vim.api.nvim_get_current_buf()
   local parent_winnr = vim.api.nvim_get_current_win()
   local params = vim.lsp.util.make_position_params()
@@ -465,14 +466,17 @@ end
 
 function Glance:toggle_fold(expand)
   local item = self.list:get_current_item()
-  if not item or item.is_unreachable then
+
+  if not item or self.list:is_flat() then
     return
   end
+
   if expand == nil then
     return self.list:toggle_fold(item)
   elseif expand then
     return self.list:open_fold(item)
   end
+
   return self.list:close_fold(item)
 end
 
@@ -484,9 +488,9 @@ function Glance:update_preview(item)
 end
 
 function Glance:close()
-  local hooks = config.options.hooks
+  local hooks = config.options.hooks or {}
 
-  if hooks and type(hooks.before_close) == 'function' then
+  if type(hooks.before_close) == 'function' then
     hooks.before_close()
   end
 
@@ -498,7 +502,7 @@ function Glance:close()
   self.list:close()
   self.preview:close()
 
-  if hooks and type(hooks.after_close) == 'function' then
+  if type(hooks.after_close) == 'function' then
     vim.schedule(hooks.after_close)
   end
 end
@@ -507,6 +511,24 @@ function Glance:destroy()
   self.list:destroy()
   self.preview:destroy()
   glance = {}
+end
+
+Glance.register_method = function(method)
+  vim.validate({
+    name = { method.name, 'string' },
+    label = { method.label, 'string' },
+    method = { method.method, 'string' },
+  })
+
+  if lsp.methods[method.name] then
+    return utils.error(("method '%s' already registered"):format(method.name))
+  end
+
+  lsp.methods[method.name] = {
+    label = method.label,
+    lsp_method = method.method,
+    non_standard = true,
+  }
 end
 
 Glance.open = Glance.actions.open

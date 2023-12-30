@@ -18,7 +18,8 @@ local function create_handler(method)
             vim.tbl_deep_extend('keep', _client_request_ids, {})
         end
 
-        if err then
+        -- Don't log a error when LSP method is non-standard
+        if err and not method.non_standard then
           utils.error(
             ('An error happened requesting %s: %s'):format(
               method.label,
@@ -69,8 +70,10 @@ M.methods = {
   },
 }
 
-for key, method in pairs(M.methods) do
-  M.methods[key].handler = create_handler(method)
+function M.setup()
+  for key, method in pairs(M.methods) do
+    M.methods[key].handler = create_handler(method)
+  end
 end
 
 function M.request(name, params, bufnr, cb)
